@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 
 from dotenv import load_dotenv
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
@@ -18,6 +19,7 @@ def launch_chrome():
     # options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(10)
     return driver
 
 
@@ -67,7 +69,6 @@ def connect_user(driver):
 
 
 def shotgun(driver):
-
     driver.get(os.environ["HUMA_RESELL_URL"])
     while True:
         time.sleep(0.5)
@@ -77,11 +78,12 @@ def shotgun(driver):
                 By.XPATH, '//button[@title="Ajouter au panier"]'
             )
             bouton.click()
-            print("✅ Bouton cliqué !")
-            send_mail()
-        except:
+        except NoSuchElementException:
             print("❌ Bouton pas dispo, on recharge...")
             driver.refresh()
+        else:
+            print("✅ Bouton cliqué !")
+            send_mail()
 
 
 def main() -> None:
