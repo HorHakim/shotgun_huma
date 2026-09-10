@@ -1,12 +1,15 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from dotenv import load_dotenv
+import os
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import time
-import os 
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+from dotenv import load_dotenv
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+
 
 def launch_chrome():
     options = Options()
@@ -16,6 +19,7 @@ def launch_chrome():
     # options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(10)
     return driver
 
 
@@ -25,7 +29,7 @@ def send_mail():
     mot_de_passe = os.environ["MAIL_PASSWORD"]
 
     sujet = "Bot Selenium - Bouton cliqué ✅"
-    corps = "https://resell.seetickets.com/fete-de-lhumanite-2025/cart"
+    corps = os.environ["HUMA_CART_URL"]
 
     # Création du message
     message = MIMEMultipart()
@@ -46,9 +50,8 @@ def send_mail():
         print(f"❌ Erreur lors de l'envoi du mail : {e}")
 
 
-
 def connect_user(driver):
-    driver.get("https://resell.seetickets.com/fete-de-lhumanite-2025/login")
+    driver.get(os.environ["HUMA_LOGIN_URL"])
 
     # Trouver le champ "username" et remplir
     username = driver.find_element(By.ID, "inputEmail")  # ou By.NAME / By.XPATH
@@ -66,25 +69,24 @@ def connect_user(driver):
 
 
 def shotgun(driver):
-
-    # driver.get("https://resell.seetickets.com/fete-de-lhumanite-2025/category/5195/fEte-de-l-humanitE-2025-pass-3-jours")
-    driver.get("https://resell.seetickets.com/fete-de-lhumanite-2025/category/5196/fEte-de-l-humanitE-2025-camping")
+    driver.get(os.environ["HUMA_RESELL_URL"])
     while True:
         time.sleep(0.5)
         try:
             # Attendre que le bouton apparaisse (max 10s)
-            bouton = driver.find_element(By.XPATH, '//button[@title="Ajouter au panier"]')
+            bouton = driver.find_element(
+                By.XPATH, '//button[@title="Ajouter au panier"]'
+            )
             bouton.click()
-            print("✅ Bouton cliqué !")
-            send_mail()
-        except:
+        except NoSuchElementException:
             print("❌ Bouton pas dispo, on recharge...")
             driver.refresh()
-            
+        else:
+            print("✅ Bouton cliqué !")
+            send_mail()
 
 
-
-if __name__ == "__main__":
+def main() -> None:
     load_dotenv()
     driver = launch_chrome()
     connect_user(driver)

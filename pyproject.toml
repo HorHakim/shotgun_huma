@@ -1,0 +1,18 @@
+[project]
+name = "shotgun-huma"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [{ name = "jonquille", email = "cochons.donde@colli.ne" }]
+requires-python = ">=3.14"
+dependencies = [
+    "python-dotenv>=1.2.3",
+    "selenium>=4.48.0",
+]
+
+[project.scripts]
+shotgun-huma = "shotgun_huma:main"
+
+[build-system]
+requires = ["uv_build>=0.12.8,<0.13.0"]
+build-backend = "uv_build"
